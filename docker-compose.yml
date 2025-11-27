@@ -15,10 +15,14 @@ services:
     labels:
       # Traefik auto-discovery
       - "traefik.enable=true"
+      # HTTP router (redirects to HTTPS in production via Cloudflare)
       - "traefik.http.routers.ai-orchestrator.rule=Host(`ai.jeffemmett.com`)"
-      - "traefik.http.routers.ai-orchestrator.entrypoints=websecure"
-      - "traefik.http.routers.ai-orchestrator.tls=true"
+      - "traefik.http.routers.ai-orchestrator.entrypoints=web"
       - "traefik.http.services.ai-orchestrator.loadbalancer.server.port=8080"
+      # HTTPS router
+      - "traefik.http.routers.ai-orchestrator-secure.rule=Host(`ai.jeffemmett.com`)"
+      - "traefik.http.routers.ai-orchestrator-secure.entrypoints=websecure"
+      - "traefik.http.routers.ai-orchestrator-secure.tls=true"
       # Health check for Traefik
       - "traefik.http.services.ai-orchestrator.loadbalancer.healthcheck.path=/api/health"
       - "traefik.http.services.ai-orchestrator.loadbalancer.healthcheck.interval=30s"
