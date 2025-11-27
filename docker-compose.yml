@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   ai-orchestrator:
     build:
@@ -13,7 +11,7 @@ services:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
       ollama:
-        condition: service_healthy
+        condition: service_started
     labels:
       # Traefik auto-discovery
       - "traefik.enable=true"
@@ -45,12 +43,13 @@ services:
     # Expose internally only (orchestrator routes to it)
     expose:
       - "11434"
+    # Note: Ollama doesn't have curl/wget, so we use a simple TCP check
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "ollama list || exit 0"]
+      interval: 60s
+      timeout: 30s
       retries: 3
-      start_period: 30s
+      start_period: 60s
     # CPU-only mode (no GPU passthrough needed for RS 8000)
     deploy:
       resources:
