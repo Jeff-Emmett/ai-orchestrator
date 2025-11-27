@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  ai-orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ai-orchestrator:latest
+    container_name: ai-orchestrator
+    restart: unless-stopped
+    environment:
+      - RUNPOD_API_KEY=${RUNPOD_API_KEY}
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    labels:
+      # Traefik auto-discovery
+      - "traefik.enable=true"
+      - "traefik.http.routers.ai-orchestrator.rule=Host(`ai.jeffemmett.com`)"
+      - "traefik.http.routers.ai-orchestrator.entrypoints=websecure"
+      - "traefik.http.routers.ai-orchestrator.tls=true"
+      - "traefik.http.services.ai-orchestrator.loadbalancer.server.port=8080"
+      # Health check for Traefik
+      - "traefik.http.services.ai-orchestrator.loadbalancer.healthcheck.path=/api/health"
+      - "traefik.http.services.ai-orchestrator.loadbalancer.healthcheck.interval=30s"
+    networks:
+      - traefik-public
+      - ai-internal
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - ai-internal
+    # Expose internally only (orchestrator routes to it)
+    expose:
+      - "11434"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    # CPU-only mode (no GPU passthrough needed for RS 8000)
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+        reservations:
+          memory: 4G
+
+volumes:
+  ollama-data:
+    driver: local
+
+networks:
+  traefik-public:
+    external: true
+  ai-internal:
+    driver: bridge
