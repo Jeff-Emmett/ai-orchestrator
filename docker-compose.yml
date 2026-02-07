@@ -13,17 +13,13 @@ services:
       ollama:
         condition: service_started
     labels:
-      # Traefik auto-discovery
       - "traefik.enable=true"
-      # HTTP router (redirects to HTTPS in production via Cloudflare)
       - "traefik.http.routers.ai-orchestrator.rule=Host(`ai.jeffemmett.com`)"
       - "traefik.http.routers.ai-orchestrator.entrypoints=web"
       - "traefik.http.services.ai-orchestrator.loadbalancer.server.port=8080"
-      # HTTPS router
       - "traefik.http.routers.ai-orchestrator-secure.rule=Host(`ai.jeffemmett.com`)"
       - "traefik.http.routers.ai-orchestrator-secure.entrypoints=websecure"
       - "traefik.http.routers.ai-orchestrator-secure.tls=true"
-      # Health check for Traefik
       - "traefik.http.services.ai-orchestrator.loadbalancer.healthcheck.path=/api/health"
       - "traefik.http.services.ai-orchestrator.loadbalancer.healthcheck.interval=30s"
     networks:
@@ -44,17 +40,14 @@ services:
       - ollama-data:/root/.ollama
     networks:
       - ai-internal
-    # Expose internally only (orchestrator routes to it)
     expose:
       - "11434"
-    # Note: Ollama doesn't have curl/wget, so we use a simple TCP check
     healthcheck:
       test: ["CMD-SHELL", "ollama list || exit 0"]
       interval: 60s
       timeout: 30s
       retries: 3
       start_period: 60s
-    # CPU-only mode (no GPU passthrough needed for RS 8000)
     deploy:
       resources:
         limits:
@@ -70,4 +63,4 @@ networks:
   traefik-public:
     external: true
   ai-internal:
-    driver: bridge
+    external: true
