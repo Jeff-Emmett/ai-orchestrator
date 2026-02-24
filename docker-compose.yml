@@ -7,8 +7,10 @@ services:
     container_name: ai-orchestrator
     restart: unless-stopped
     environment:
-      - RUNPOD_API_KEY=${RUNPOD_API_KEY}
       - OLLAMA_HOST=http://ollama:11434
+      - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
+      - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
+      - INFISICAL_PROJECT_SLUG=ai-orchestrator
     depends_on:
       ollama:
         condition: service_started

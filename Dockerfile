@@ -27,6 +27,10 @@ RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
 # Copy application code
 COPY server.py .
 
+# Copy Infisical entrypoint
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Set ownership
 RUN chown -R appuser:appuser /app
 
@@ -45,4 +49,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health')" || exit 1
 
 # Run the application
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]

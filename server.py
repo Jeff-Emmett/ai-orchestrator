@@ -20,7 +20,7 @@ from typing import Optional, List, Dict, Any, Literal
 from enum import Enum
 
 # Config
-RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY", "rpa_YYOARL5MEBTTKKWGABRKTW2CVHQYRBTOBZNSGIL3lwwfdz")
+RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY", "")
 RUNPOD_API_BASE = "https://api.runpod.ai/v2"
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
