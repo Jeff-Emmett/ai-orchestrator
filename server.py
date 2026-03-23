@@ -663,8 +663,10 @@ async def generate_text(request: TextRequest):
         cost_tracker["runpod_requests"] += 1
         payload = {
             "prompt": request.prompt,
-            "max_tokens": request.max_tokens,
-            "temperature": request.temperature,
+            "sampling_params": {
+                "max_tokens": request.max_tokens,
+                "temperature": request.temperature,
+            },
         }
         result = await submit_job(ENDPOINTS["llm"]["id"], payload)
         if "id" in result:
