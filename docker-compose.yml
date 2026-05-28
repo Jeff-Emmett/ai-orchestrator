@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       - OLLAMA_HOST=http://ollama:11434
-      - RUNPOD_API_KEY=${RUNPOD_API_KEY}
+      - RUNPOD_API_KEY=${RUNPOD_API_KEY:?ERROR RUNPOD_API_KEY must be set in .env}
       - INFISICAL_CLIENT_ID=${INFISICAL_CLIENT_ID}
       - INFISICAL_CLIENT_SECRET=${INFISICAL_CLIENT_SECRET}
       - INFISICAL_PROJECT_SLUG=ai-orchestrator
