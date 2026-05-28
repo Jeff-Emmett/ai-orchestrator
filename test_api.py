@@ -2,7 +2,7 @@ import runpod
 import os
 
 # Set API key from config
-runpod.api_key = "rpa_YYOARL5MEBTTKKWGABRKTW2CVHQYRBTOBZNSGIL3lwwfdz"
+runpod.api_key = os.getenv("RUNPOD_API_KEY", "")
 
 # Test 1: List all pods
 print("=== Testing RunPod API Connection ===\n")
