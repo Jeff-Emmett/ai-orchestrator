@@ -56,6 +56,17 @@ except Exception as e:
 }
 
 if echo "$EXPORTS" | grep -q "^export "; then
+  # ── DROP UNFILLED FILL-REQUESTS ──────────────────────────────────────────────
+  # `secretctl request` parks a not-yet-filled secret at __SECRETCTL_PENDING__, a
+  # fixed PUBLIC literal. Injecting it hands the app a GUESSABLE credential, and it
+  # would be COUNTED below, so a minimum-count gate reports a healthy boot over a
+  # placeholder. Fail-closed cannot catch this by construction; only this filter can.
+  PENDING_RE="^export [A-Za-z_][A-Za-z0-9_]*=['\"]?__SECRETCTL_PENDING__"
+  if echo "$EXPORTS" | grep -Eq "$PENDING_RE"; then
+    echo "[infisical] WARNING: dropping unfilled secretctl fill-request(s):"
+    echo "$EXPORTS" | grep -E "$PENDING_RE" | sed "s/^export /  /; s/=.*/  (PENDING - not injected)/"
+    EXPORTS=$(echo "$EXPORTS" | grep -Ev "$PENDING_RE")
+  fi
   COUNT=$(echo "$EXPORTS" | grep -c "^export ")
   eval "$EXPORTS"
   echo "[infisical] Injected ${COUNT} secrets"
