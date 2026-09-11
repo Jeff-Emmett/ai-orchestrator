@@ -8,7 +8,6 @@ services:
     restart: unless-stopped
     environment:
     - OLLAMA_HOST=http://ollama:11434
-    - RUNPOD_API_KEY=${RUNPOD_API_KEY:?ERROR RUNPOD_API_KEY must be set in .env}
     labels:
     - traefik.enable=true
     - traefik.http.routers.ai-orchestrator.rule=Host(`ai.jeffemmett.com`)
@@ -44,10 +43,9 @@ services:
     - --host
     - 0.0.0.0
     - --port
-    - "8080"
+    - '8080'
     env_file:
     - .env
-
 networks:
   traefik-public:
     external: true
