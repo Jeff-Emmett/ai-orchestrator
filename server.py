@@ -24,14 +24,12 @@ RUNPOD_API_KEY = os.getenv("RUNPOD_API_KEY", "")
 RUNPOD_API_BASE = "https://api.runpod.ai/v2"
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
-# RunPod endpoints (paid GPU)
+# RunPod endpoints (paid GPU). The video, image, ComfyUI and WhisperX endpoints were deleted
+# 2026-10-27 (rspace TASK-1727.14); media generation lives on the LiteLLM gateway's media models.
 ENDPOINTS = {
-    "video": {"id": "4jql4l7l0yw0f3", "name": "Wan2.2 Video", "type": "video"},
-    "image": {"id": "tzf1j3sc3zufsy", "name": "Automatic1111 SD", "type": "image"},
-    "comfyui": {"id": "5zurj845tbf8he", "name": "ComfyUI", "type": "image"},
-    "whisper": {"id": "lrtisuv8ixbtub", "name": "WhisperX", "type": "audio"},
     "llm": {"id": "03g5hz3hlo8gr2", "name": "vLLM", "type": "text"},
 }
+MEDIA_GONE = "RunPod media endpoints were retired; use the LiteLLM gateway media models (local-image-*, local-video-*)"
 
 # Ollama models (free local CPU)
 OLLAMA_MODELS = {
@@ -518,35 +516,13 @@ class ImageRequest(BaseModel):
 @app.post("/api/generate/video")
 async def generate_video(request: VideoRequest):
     """Generate video using Wan2.2"""
-    import random
-    payload = request.dict()
-    # Generate random seed if not provided
-    if payload.get("seed") is None:
-        payload["seed"] = random.randint(1, 2147483647)
-
-    result = await submit_job(ENDPOINTS["video"]["id"], payload)
-    if "id" in result:
-        recent_jobs.append({
-            "endpoint": "video",
-            "id": result["id"],
-            "status": result.get("status", "SUBMITTED"),
-            "timestamp": datetime.now().isoformat(),
-        })
-    return result
+    raise HTTPException(status_code=410, detail=MEDIA_GONE)
 
 
 @app.post("/api/generate/image")
 async def generate_image(request: ImageRequest):
     """Generate image using Automatic1111"""
-    result = await submit_job(ENDPOINTS["image"]["id"], request.dict())
-    if "id" in result:
-        recent_jobs.append({
-            "endpoint": "image",
-            "id": result["id"],
-            "status": result.get("status", "SUBMITTED"),
-            "timestamp": datetime.now().isoformat(),
-        })
-    return result
+    raise HTTPException(status_code=410, detail=MEDIA_GONE)
 
 
 class ComfyUIRequest(BaseModel):
@@ -565,36 +541,7 @@ class ComfyUIRequest(BaseModel):
 @app.post("/api/generate/comfyui")
 async def generate_comfyui(request: ComfyUIRequest):
     """Generate image using ComfyUI with workflow"""
-    import random
-
-    # Use custom workflow if provided, otherwise build default txt2img
-    if request.workflow:
-        workflow = request.workflow
-    else:
-        seed = request.seed if request.seed is not None else random.randint(1, 2147483647)
-        workflow = build_comfyui_workflow(
-            prompt=request.prompt,
-            negative_prompt=request.negative_prompt,
-            seed=seed,
-            steps=request.steps,
-            cfg=request.cfg,
-            width=request.width,
-            height=request.height,
-            sampler=request.sampler,
-            scheduler=request.scheduler,
-        )
-
-    payload = {"workflow": workflow}
-    result = await submit_job(ENDPOINTS["comfyui"]["id"], payload)
-
-    if "id" in result:
-        recent_jobs.append({
-            "endpoint": "comfyui",
-            "id": result["id"],
-            "status": result.get("status", "SUBMITTED"),
-            "timestamp": datetime.now().isoformat(),
-        })
-    return result
+    raise HTTPException(status_code=410, detail=MEDIA_GONE)
 
 
 # ============== Text Generation Endpoints (Smart Routing) ==============
